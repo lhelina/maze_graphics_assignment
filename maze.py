@@ -42,3 +42,13 @@ solve_visited = [[False for _ in range(C + 1)] for _ in range(R + 1)]
 
 solve_i, solve_j = start_i, start_j
 solve_visited[solve_i][solve_j] = True
+
+def setup_solver():
+    global solving, solve_i, solve_j
+    solving = True
+    # Clean reset of solver parameters to match random assignment start
+    solve_i, solve_j = start_i, start_j
+    solve_stack.clear()
+    solve_stack.append((solve_i, solve_j))
+    solve_visited[solve_i][solve_j] = True
+
