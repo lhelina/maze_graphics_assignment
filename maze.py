@@ -135,4 +135,60 @@ def solve_step():
         solve_i, solve_j = solve_stack.pop()
     else:
         solving = False
+def draw_maze():
+    canvas.delete("all")
+    canvas.create_rectangle(0, 0, WIDTH, HEIGHT, fill="black")
+
+    # Render ALL structural lines including the perimeter
+    for i in range(0, R + 1):
+        for j in range(0, C + 1):
+            x = j * CELL_SIZE
+            y = HEIGHT - (i * CELL_SIZE)
+
+            # Draw North walls (horizontal ceilings)
+            if j > 0 and j <= C and northwall[i][j] == 1:
+                canvas.create_line(x - CELL_SIZE, y, x, y, fill="white", width=2)
+            
+            # Draw East walls (vertical right walls)
+            if i > 0 and i <= R and eastwall[i][j] == 1:
+                canvas.create_line(x, y, x, y + CELL_SIZE, fill="white", width=2)
+
+    # Render Dead End paths (Blue circles)
+    for (si, sj) in dead_ends:
+        cx = (sj - 1) * CELL_SIZE + CELL_SIZE // 2
+        cy = HEIGHT - ((si - 1) * CELL_SIZE + CELL_SIZE // 2)
+        canvas.create_oval(cx-4, cy-4, cx+4, cy+4, fill="blue", outline="blue")
+
+    # Render True Solver path stack (Green circles)
+    for (si, sj) in solve_stack:
+        cx = (sj - 1) * CELL_SIZE + CELL_SIZE // 2
+        cy = HEIGHT - ((si - 1) * CELL_SIZE + CELL_SIZE // 2)
+        canvas.create_oval(cx-4, cy-4, cx+4, cy+4, fill="green", outline="green")
+
+    # Render Active Tracking Mouse (Centered Red Square)
+    if generating or solving:
+        mi, mj = (curr_i, curr_j) if generating else (solve_i, solve_j)
+        mx = (mj - 1) * CELL_SIZE + 6
+        my = HEIGHT - ((mi - 1) * CELL_SIZE)
+        canvas.create_rectangle(mx, my + 6, mx + CELL_SIZE - 12, my + CELL_SIZE - 6, fill="red", outline="red")
+
+
+def update_loop():
+    if generating:
+        generate_step()
+    elif solving:
+        solve_step()
+
+    draw_maze()
+    root.after(40, update_loop)
+
+
+root = tk.Tk()
+root.title("Maze Generator and Solver")
+canvas = tk.Canvas(root, width=WIDTH, height=HEIGHT, bg="black")
+canvas.pack()
+
+update_loop()
+root.mainloop()
+
 
