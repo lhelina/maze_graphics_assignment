@@ -52,3 +52,57 @@ def setup_solver():
     solve_stack.append((solve_i, solve_j))
     solve_visited[solve_i][solve_j] = True
 
+
+def generate_step():
+    global curr_i, curr_j, generating
+
+    neighbours = []
+
+    # Look for unvisited neighbors (1-based boundaries)
+    if curr_i < R and not visited[curr_i + 1][curr_j]:
+        neighbours.append(('N', curr_i + 1, curr_j))
+    if curr_i > 1 and not visited[curr_i - 1][curr_j]:
+        neighbours.append(('S', curr_i - 1, curr_j))
+    if curr_j < C and not visited[curr_i][curr_j + 1]:
+        neighbours.append(('E', curr_i, curr_j + 1))
+    if curr_j > 1 and not visited[curr_i][curr_j - 1]:
+        neighbours.append(('W', curr_i, curr_j - 1))
+
+    if neighbours:
+        direction, next_i, next_j = random.choice(neighbours)
+        stack.append((curr_i, curr_j))
+
+        # --- CORRECTED WALL BREAKING LOGIC ---
+        # northwall[i][j] is the ceiling of (i,j). eastwall[i][j] is the right wall of (i,j).
+        if direction == 'N': 
+            northwall[curr_i][curr_j] = 0
+        elif direction == 'S': 
+            northwall[curr_i - 1][curr_j] = 0
+        elif direction == 'E': 
+            eastwall[curr_i][curr_j] = 0
+        elif direction == 'W': 
+            eastwall[curr_i][curr_j - 1] = 0
+
+        # --- CHALLENGE BONUS: 1 in 20 chance to eat an extra wall ---
+        if random.randint(1, 20) == 1:
+            extra_dirs = []
+            if curr_i < R: extra_dirs.append('N')
+            if curr_i > 1: extra_dirs.append('S')
+            if curr_j < C: extra_dirs.append('E')
+            if curr_j > 1: extra_dirs.append('W')
+
+            if extra_dirs:
+                rogue_dir = random.choice(extra_dirs)
+                if rogue_dir == 'N': northwall[curr_i][curr_j] = 0
+                elif rogue_dir == 'S': northwall[curr_i - 1][curr_j] = 0
+                elif rogue_dir == 'E': eastwall[curr_i][curr_j] = 0
+                elif rogue_dir == 'W': eastwall[curr_i][curr_j - 1] = 0
+
+        curr_i, curr_j = next_i, next_j
+        visited[curr_i][curr_j] = True
+
+    elif stack:
+        curr_i, curr_j = stack.pop()
+    else:
+        generating = False
+        setup_solver()
