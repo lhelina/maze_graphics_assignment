@@ -1,13 +1,13 @@
 import tkinter as tk
 import random
 
-# Dimensions requested by assignment (R rows by C columns)
+# Dimensions (R rows by C columns)
 R, C = 20, 25
 CELL_SIZE = 30
 WIDTH = C * CELL_SIZE
 HEIGHT = R * CELL_SIZE
 
-# --- ASSIGNMENT DATA STRUCTURES ---
+# data structures
 # 1-based index mapping: cells range from row 1..R and col 1..C.
 # northwall[i][j] == 1 means cell (i,j) has a solid upper (north) wall.
 # eastwall[i][j] == 1 means cell (i,j) has a solid right (east) wall.
@@ -106,3 +106,33 @@ def generate_step():
     else:
         generating = False
         setup_solver()
+def solve_step():
+    global solve_i, solve_j, solving
+
+    if solve_i == end_i and solve_j == end_j:
+        solving = False
+        return
+
+    neighbours = []
+
+    # Check for paths with NO walls that haven't been visited by the solver yet
+    if solve_i < R and northwall[solve_i][solve_j] == 0 and not solve_visited[solve_i + 1][solve_j]:
+        neighbours.append((solve_i + 1, solve_j))
+    if solve_i > 1 and northwall[solve_i - 1][solve_j] == 0 and not solve_visited[solve_i - 1][solve_j]:
+        neighbours.append((solve_i - 1, solve_j))
+    if solve_j < C and eastwall[solve_i][solve_j] == 0 and not solve_visited[solve_i][solve_j + 1]:
+        neighbours.append((solve_i, solve_j + 1))
+    if solve_j > 1 and eastwall[solve_i][solve_j - 1] == 0 and not solve_visited[solve_i][solve_j - 1]:
+        neighbours.append((solve_i, solve_j - 1))
+
+    if neighbours:
+        solve_stack.append((solve_i, solve_j))
+        solve_i, solve_j = random.choice(neighbours)
+        solve_visited[solve_i][solve_j] = True
+    elif solve_stack:
+        # Mark dead end as blue trail and backtrack
+        dead_ends.append((solve_i, solve_j))
+        solve_i, solve_j = solve_stack.pop()
+    else:
+        solving = False
+
